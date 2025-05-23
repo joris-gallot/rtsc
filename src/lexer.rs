@@ -11,7 +11,7 @@ pub enum Token {
   LParen,
   RParen,
   Number(f64),
-  Ident(String),
+  Identifier(String),
   Type(String),
   EOF,
 }
@@ -119,7 +119,7 @@ impl Lexer {
     match ident.as_str() {
       "let" => Token::Let,
       "number" => Token::Type("number".to_string()),
-      _ => Token::Ident(ident),
+      _ => Token::Identifier(ident),
     }
   }
 
@@ -177,7 +177,7 @@ mod tests {
       tokens,
       vec![
         Token::Let,
-        Token::Ident("x".to_string()),
+        Token::Identifier("x".to_string()),
         Token::Colon,
         Token::Type("number".to_string()),
         Token::Equal,
@@ -211,11 +211,11 @@ mod tests {
     assert_eq!(
       tokens,
       vec![
-        Token::Ident("x".to_string()),
-        Token::Ident("y".to_string()),
-        Token::Ident("foo".to_string()),
-        Token::Ident("bar".to_string()),
-        Token::Ident("baz".to_string()),
+        Token::Identifier("x".to_string()),
+        Token::Identifier("y".to_string()),
+        Token::Identifier("foo".to_string()),
+        Token::Identifier("bar".to_string()),
+        Token::Identifier("baz".to_string()),
       ]
     );
   }
@@ -229,8 +229,8 @@ mod tests {
       tokens,
       vec![
         Token::Let,
-        Token::Ident("letx".to_string()),
-        Token::Ident("lettering".to_string()),
+        Token::Identifier("letx".to_string()),
+        Token::Identifier("lettering".to_string()),
       ]
     );
   }
@@ -251,10 +251,10 @@ mod tests {
     assert_eq!(
       tokens,
       vec![
-        Token::Ident("string".to_string()),
-        Token::Ident("boolean".to_string()),
-        Token::Ident("any".to_string()),
-        Token::Ident("void".to_string()),
+        Token::Identifier("string".to_string()),
+        Token::Identifier("boolean".to_string()),
+        Token::Identifier("any".to_string()),
+        Token::Identifier("void".to_string()),
       ]
     );
   }
@@ -268,7 +268,7 @@ mod tests {
       tokens,
       vec![
         Token::Let,
-        Token::Ident("x".to_string()),
+        Token::Identifier("x".to_string()),
         Token::Colon,
         Token::Type("number".to_string()),
         Token::Equal,
@@ -287,7 +287,7 @@ mod tests {
       tokens,
       vec![
         Token::Let,
-        Token::Ident("result".to_string()),
+        Token::Identifier("result".to_string()),
         Token::Colon,
         Token::Type("number".to_string()),
         Token::Equal,
@@ -316,14 +316,14 @@ mod tests {
       tokens,
       vec![
         Token::Let,
-        Token::Ident("x".to_string()),
+        Token::Identifier("x".to_string()),
         Token::Colon,
         Token::Type("number".to_string()),
         Token::Equal,
         Token::Number(10.0),
         Token::Semicolon,
         Token::Let,
-        Token::Ident("y".to_string()),
+        Token::Identifier("y".to_string()),
         Token::Colon,
         Token::Type("number".to_string()),
         Token::Equal,
