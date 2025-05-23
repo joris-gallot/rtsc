@@ -29,6 +29,18 @@ impl Lexer {
     }
   }
 
+  pub fn collect_tokens(&mut self) -> Vec<Token> {
+    let mut tokens = Vec::new();
+    loop {
+      let token = self.next_token();
+      if token == Token::EOF {
+        break;
+      }
+      tokens.push(token);
+    }
+    tokens
+  }
+
   fn peek(&self) -> Option<char> {
     self.input.get(self.position).cloned()
   }
@@ -132,15 +144,7 @@ mod tests {
 
   fn collect_tokens(input: &str) -> Vec<Token> {
     let mut lexer = Lexer::new(input);
-    let mut tokens = Vec::new();
-    loop {
-      let token = lexer.next_token();
-      if token == Token::EOF {
-        break;
-      }
-      tokens.push(token);
-    }
-    tokens
+    lexer.collect_tokens()
   }
 
   #[test]
