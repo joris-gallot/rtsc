@@ -11,6 +11,7 @@ pub enum Token {
   LParen,
   RParen,
   Number(f64),
+  String(String),
   Identifier(String),
   Type(String),
   EOF,
@@ -62,6 +63,7 @@ impl Lexer {
     match current {
       Some(c) if c.is_ascii_alphabetic() => self.read_ident_or_keyword(),
       Some(c) if c.is_ascii_digit() => self.read_number(),
+      Some('"') => self.read_string(),
       Some('+') => {
         self.advance();
         Token::Plus
@@ -99,7 +101,7 @@ impl Lexer {
         Token::Equal
       }
       Some(_) => {
-        panic!("Unknown character");
+        panic!("Unknown character: {}", current.unwrap());
       }
       None => Token::EOF,
     }
@@ -119,8 +121,24 @@ impl Lexer {
     match ident.as_str() {
       "let" => Token::Let,
       "number" => Token::Type("number".to_string()),
+      "string" => Token::Type("string".to_string()),
       _ => Token::Identifier(ident),
     }
+  }
+
+  fn read_string(&mut self) -> Token {
+    self.advance();
+    let mut string = String::new();
+    while let Some(c) = self.peek() {
+      if c == '"' {
+        self.advance();
+        break;
+      }
+      string.push(c);
+      self.advance();
+    }
+
+    Token::String(string)
   }
 
   fn read_number(&mut self) -> Token {
@@ -169,7 +187,7 @@ mod tests {
   }
 
   #[test]
-  fn test_let_binding() {
+  fn test_let_binding_number() {
     let input = "let x: number = 10;";
     let tokens = collect_tokens(input);
 
@@ -182,6 +200,25 @@ mod tests {
         Token::Type("number".to_string()),
         Token::Equal,
         Token::Number(10.0),
+        Token::Semicolon,
+      ]
+    );
+  }
+
+  #[test]
+  fn test_let_binding_string() {
+    let input = "let str: string = \"Hello\";";
+    let tokens = collect_tokens(input);
+
+    assert_eq!(
+      tokens,
+      vec![
+        Token::Let,
+        Token::Identifier("str".to_string()),
+        Token::Colon,
+        Token::Type("string".to_string()),
+        Token::Equal,
+        Token::String("Hello".to_string()),
         Token::Semicolon,
       ]
     );
@@ -244,14 +281,21 @@ mod tests {
   }
 
   #[test]
+  fn test_string_type() {
+    let input = "string";
+    let tokens = collect_tokens(input);
+
+    assert_eq!(tokens, vec![Token::Type("string".to_string()),]);
+  }
+
+  #[test]
   fn test_custom_type_identifiers() {
-    let input = "string boolean any void";
+    let input = "boolean any void";
     let tokens = collect_tokens(input);
 
     assert_eq!(
       tokens,
       vec![
-        Token::Identifier("string".to_string()),
         Token::Identifier("boolean".to_string()),
         Token::Identifier("any".to_string()),
         Token::Identifier("void".to_string()),
