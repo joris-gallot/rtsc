@@ -29,12 +29,21 @@ impl TypeChecker {
 
     if expected_type != actual_type {
       panic!(
-        "Type mismatch for '{}': expected {:?}, found {:?}",
-        stmt.name, expected_type, actual_type
+        "Type mismatch for '{}': expected {:?}",
+        stmt.name, expected_type
       );
     }
 
     self.env.insert(stmt.name.clone(), expected_type);
+  }
+
+  fn binary_operator_to_text(&self, op: &BinaryOp) -> &'static str {
+    match op {
+      BinaryOp::Add => "+",
+      BinaryOp::Sub => "-",
+      BinaryOp::Mul => "*",
+      BinaryOp::Div => "/",
+    }
   }
 
   fn check_expr(&self, expr: &Expr) -> Type {
@@ -53,8 +62,8 @@ impl TypeChecker {
             Type::String
           } else {
             panic!(
-              "Type error: '{:?}' can only be used for string concatenation",
-              op
+              "Type error: '{}' can only be used for number operations",
+              self.binary_operator_to_text(op)
             );
           }
         } else {

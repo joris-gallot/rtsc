@@ -73,28 +73,32 @@ mod tests {
   fn test_string_invalid_operation() {
     let result = type_check_str("let s: string = \"hello\" - \"world\";");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type error"));
+    assert!(
+      result
+        .unwrap()
+        .eq("Type error: '-' can only be used for number operations")
+    );
   }
 
   #[test]
   fn test_type_mismatch_number_string() {
     let result = type_check_str("let x: number = \"hello\";");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type mismatch"));
+    assert!(result.unwrap().eq("Type mismatch for 'x': expected Number"));
   }
 
   #[test]
   fn test_type_mismatch_string_number() {
     let result = type_check_str("let s: string = 42;");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type mismatch"));
+    assert!(result.unwrap().eq("Type mismatch for 's': expected String"));
   }
 
   #[test]
   fn test_type_mismatch_in_binary_expr() {
     let result = type_check_str("let x: number = 42 + \"hello\";");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type mismatch"));
+    assert!(result.unwrap().eq("Type mismatch for 'x': expected Number"));
   }
 
   #[test]
@@ -109,7 +113,7 @@ mod tests {
   fn test_variable_reference_wrong_type() {
     let result = type_check_str("let x: string = \"hello\"; let y: number = x;");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type mismatch"));
+    assert!(result.unwrap().eq("Type mismatch for 'y': expected Number"));
   }
 
   #[test]
@@ -132,9 +136,9 @@ mod tests {
 
   #[test]
   fn test_undefined_variable() {
-    let result = type_check_str("let x: number = undefined_var;");
+    let result = type_check_str("let x: number = undefined;");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type mismatch"));
+    assert!(result.unwrap().eq("Type mismatch for 'x': expected Number"));
   }
 
   #[test]
@@ -142,6 +146,10 @@ mod tests {
     let result =
       type_check_str("let x: number = 5; let s: string = \"hello\"; let result: number = x + s;");
     assert!(result.is_some());
-    assert!(result.unwrap().contains("Type mismatch"));
+    assert!(
+      result
+        .unwrap()
+        .eq("Type mismatch for 'result': expected Number")
+    );
   }
 }
