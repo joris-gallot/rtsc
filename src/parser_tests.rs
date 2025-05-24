@@ -44,6 +44,22 @@ mod tests {
   }
 
   #[test]
+  fn test_parse_simple_let_string() {
+    let program = parse_program("let greeting: string = \"Hello, World!\";");
+
+    assert_eq!(program.statements.len(), 1);
+    let stmt = &program.statements[0];
+
+    assert_eq!(stmt.name, "greeting");
+    assert_eq!(stmt.type_name, "string");
+
+    match &stmt.value {
+      Expr::String(s) => assert_eq!(s, "Hello, World!"),
+      _ => panic!("Expected String expression, got {:?}", stmt.value),
+    }
+  }
+
+  #[test]
   fn test_parse_simple_let_identifier() {
     let program = parse_program("let y: number = x;");
 
@@ -255,13 +271,13 @@ mod tests {
   }
 
   #[test]
-  #[should_panic(expected = "Type expected")]
+  #[should_panic(expected = "Expected: Colon")]
   fn test_error_missing_type() {
     parse_program("let x = 10;");
   }
 
   #[test]
-  #[should_panic(expected = "expected")]
+  #[should_panic(expected = "Expected: Semicolo")]
   fn test_error_missing_semicolon() {
     parse_program("let x: number = 10");
   }

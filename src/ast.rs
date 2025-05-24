@@ -1,5 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub enum Expr {
+  String(String),
   Number(f64),
   Identifier(String),
   Binary {
@@ -7,6 +8,13 @@ pub enum Expr {
     op: BinaryOp,
     right: Box<Expr>,
   },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Type {
+  Number,
+  String,
+  Unknown,
 }
 
 #[derive(Debug, PartialEq)]

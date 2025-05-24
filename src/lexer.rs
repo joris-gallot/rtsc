@@ -17,9 +17,18 @@ pub enum Token {
   EOF,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct SpannedToken {
+  pub token: Token,
+  pub line: usize,
+  pub column: usize,
+}
+
 pub struct Lexer {
   input: Vec<char>,
   position: usize,
+  line: usize,
+  column: usize,
 }
 
 impl Lexer {
@@ -27,17 +36,19 @@ impl Lexer {
     Self {
       input: input.chars().collect(),
       position: 0,
+      line: 1,
+      column: 1,
     }
   }
 
-  pub fn collect_tokens(&mut self) -> Vec<Token> {
+  pub fn collect_tokens(&mut self) -> Vec<SpannedToken> {
     let mut tokens = Vec::new();
     loop {
-      let token = self.next_token();
-      if token == Token::EOF {
+      let next_token = self.next_token();
+      if next_token.token == Token::EOF {
         break;
       }
-      tokens.push(token);
+      tokens.push(next_token);
     }
     tokens
   }
@@ -47,6 +58,14 @@ impl Lexer {
   }
 
   fn advance(&mut self) {
+    if let Some(c) = self.peek() {
+      if c == '\n' {
+        self.line += 1;
+        self.column = 1;
+      } else {
+        self.column += 1;
+      }
+    }
     self.position += 1;
   }
 
@@ -56,11 +75,12 @@ impl Lexer {
     }
   }
 
-  pub fn next_token(&mut self) -> Token {
+  pub fn next_token(&mut self) -> SpannedToken {
     self.skip_whitespace();
+    let line = self.line;
+    let column = self.column;
 
-    let current = self.peek();
-    match current {
+    let token = match self.peek() {
       Some(c) if c.is_ascii_alphabetic() => self.read_ident_or_keyword(),
       Some(c) if c.is_ascii_digit() => self.read_number(),
       Some('"') => self.read_string(),
@@ -100,10 +120,16 @@ impl Lexer {
         self.advance();
         Token::Equal
       }
-      Some(_) => {
-        panic!("Unknown character: {}", current.unwrap());
+      Some(c) => {
+        panic!("Unknown character: {}", c);
       }
       None => Token::EOF,
+    };
+
+    SpannedToken {
+      token,
+      line,
+      column,
     }
   }
 

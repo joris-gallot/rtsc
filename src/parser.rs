@@ -1,40 +1,48 @@
 use crate::ast::{BinaryOp, Expr, LetStatement, Program};
-use crate::lexer::Token;
+use crate::lexer::{SpannedToken, Token};
 
 pub struct Parser {
-  tokens: Vec<Token>,
+  tokens: Vec<SpannedToken>,
   position: usize,
 }
 
 impl Parser {
-  pub fn new(tokens: Vec<Token>) -> Self {
+  pub fn new(tokens: Vec<SpannedToken>) -> Self {
     Parser {
       tokens,
       position: 0,
     }
   }
 
-  fn peek(&self) -> &Token {
-    self.tokens.get(self.position).unwrap_or(&Token::EOF)
+  fn peek(&self) -> &SpannedToken {
+    self.tokens.get(self.position).unwrap_or(&SpannedToken {
+      token: Token::EOF,
+      line: 0,
+      column: 0,
+    })
   }
 
-  fn next(&mut self) -> &Token {
+  fn next(&mut self) -> &SpannedToken {
     let pos = self.position;
     self.position += 1;
-    self.tokens.get(pos).unwrap_or(&Token::EOF)
+    self.tokens.get(pos).unwrap_or(&SpannedToken {
+      token: Token::EOF,
+      line: 0,
+      column: 0,
+    })
   }
 
   fn expect(&mut self, expected: &Token) {
     let tok = self.next();
-    if tok != expected {
-      panic!("Type expected");
+    if &tok.token != expected {
+      panic!("Expected: {:?}", expected);
     }
   }
 
   pub fn parse_program(&mut self) -> Program {
     let mut statements = Vec::new();
 
-    while self.peek() != &Token::EOF {
+    while self.peek().token != Token::EOF {
       statements.push(self.parse_let_statement());
     }
 
@@ -44,16 +52,16 @@ impl Parser {
   fn parse_let_statement(&mut self) -> LetStatement {
     self.expect(&Token::Let);
 
-    let name = match self.next() {
+    let name = match &self.next().token {
       Token::Identifier(n) => n.clone(),
-      other => panic!("Name expected, found {:?}", other),
+      other => panic!("Expected identifier name, found {:?}", other),
     };
 
     self.expect(&Token::Colon);
 
-    let type_name = match self.next() {
+    let type_name = match &self.next().token {
       Token::Type(t) => t.clone(),
-      other => panic!("Type expected, found {:?}", other),
+      other => panic!("Expected type annotation, found {:?}", other),
     };
 
     self.expect(&Token::Equal);
@@ -61,6 +69,24 @@ impl Parser {
     let value = self.parse_expression();
 
     self.expect(&Token::Semicolon);
+
+    // if type_name == "string" {
+    //   if let Expr::Binary {
+    //     left: _,
+    //     op,
+    //     right: __,
+    //   } = &value
+    //   {
+    //     if !matches!(op, BinaryOp::Add) {
+    //       panic!(
+    //         "Type error at {}:{}: String type can only use '+' for concatenation: {:?}",
+    //         self.peek().line,
+    //         self.peek().column,
+    //         self.peek().token
+    //       );
+    //     }
+    //   }
+    // }
 
     LetStatement {
       name,
@@ -76,8 +102,8 @@ impl Parser {
   fn parse_term(&mut self) -> Expr {
     let mut left = self.parse_factor();
 
-    while let Token::Plus | Token::Minus = self.peek() {
-      let op = match self.next() {
+    while matches!(&self.peek().token, Token::Plus | Token::Minus) {
+      let op = match &self.next().token {
         Token::Plus => BinaryOp::Add,
         Token::Minus => BinaryOp::Sub,
         _ => unreachable!(),
@@ -97,8 +123,8 @@ impl Parser {
   fn parse_factor(&mut self) -> Expr {
     let mut left = self.parse_primary();
 
-    while let Token::Star | Token::Slash = self.peek() {
-      let op = match self.next() {
+    while matches!(&self.peek().token, Token::Star | Token::Slash) {
+      let op = match &self.next().token {
         Token::Star => BinaryOp::Mul,
         Token::Slash => BinaryOp::Div,
         _ => unreachable!(),
@@ -116,15 +142,16 @@ impl Parser {
   }
 
   fn parse_primary(&mut self) -> Expr {
-    match self.next() {
+    match &self.next().token {
       Token::LParen => {
         let expr = self.parse_expression();
         self.expect(&Token::RParen);
         expr
       }
       Token::Number(n) => Expr::Number(*n),
+      Token::String(s) => Expr::String(s.clone()),
       Token::Identifier(name) => Expr::Identifier(name.clone()),
-      other => panic!("Unexpected expression: {:?}", other),
+      other => panic!("Expected expression, found unexpected token: {:?}", other),
     }
   }
 }
