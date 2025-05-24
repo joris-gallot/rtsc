@@ -70,24 +70,6 @@ impl Parser {
 
     self.expect(&Token::Semicolon);
 
-    // if type_name == "string" {
-    //   if let Expr::Binary {
-    //     left: _,
-    //     op,
-    //     right: __,
-    //   } = &value
-    //   {
-    //     if !matches!(op, BinaryOp::Add) {
-    //       panic!(
-    //         "Type error at {}:{}: String type can only use '+' for concatenation: {:?}",
-    //         self.peek().line,
-    //         self.peek().column,
-    //         self.peek().token
-    //       );
-    //     }
-    //   }
-    // }
-
     LetStatement {
       name,
       type_name,
