@@ -34,12 +34,12 @@ mod tests {
     assert_eq!(program.statements.len(), 1);
     let stmt = &program.statements[0];
 
-    assert_eq!(stmt.name, "x");
-    assert_eq!(stmt.type_name, "number");
+    assert_eq!(stmt.name.value, "x");
+    assert_eq!(stmt.type_name.value, "number");
 
-    match &stmt.value {
+    match &stmt.expression.value {
       Expr::Number(n) => assert_eq!(*n, 42.0),
-      _ => panic!("Expected Number expression, got {:?}", stmt.value),
+      _ => panic!("Expected Number expression, got {:?}", stmt.expression),
     }
   }
 
@@ -50,12 +50,12 @@ mod tests {
     assert_eq!(program.statements.len(), 1);
     let stmt = &program.statements[0];
 
-    assert_eq!(stmt.name, "greeting");
-    assert_eq!(stmt.type_name, "string");
+    assert_eq!(stmt.name.value, "greeting");
+    assert_eq!(stmt.type_name.value, "string");
 
-    match &stmt.value {
+    match &stmt.expression.value {
       Expr::String(s) => assert_eq!(s, "Hello, World!"),
-      _ => panic!("Expected String expression, got {:?}", stmt.value),
+      _ => panic!("Expected String expression, got {:?}", stmt.expression),
     }
   }
 
@@ -66,12 +66,12 @@ mod tests {
     assert_eq!(program.statements.len(), 1);
     let stmt = &program.statements[0];
 
-    assert_eq!(stmt.name, "y");
-    assert_eq!(stmt.type_name, "number");
+    assert_eq!(stmt.name.value, "y");
+    assert_eq!(stmt.type_name.value, "number");
 
-    match &stmt.value {
+    match &stmt.expression.value {
       Expr::Identifier(name) => assert_eq!(name, "x"),
-      _ => panic!("Expected Identifier expression, got {:?}", stmt.value),
+      _ => panic!("Expected Identifier expression, got {:?}", stmt.expression),
     }
   }
 
@@ -82,11 +82,11 @@ mod tests {
     assert_eq!(program.statements.len(), 1);
     let stmt = &program.statements[0];
 
-    assert_eq!(stmt.name, "result");
-    assert_eq!(stmt.type_name, "number");
+    assert_eq!(stmt.name.value, "result");
+    assert_eq!(stmt.type_name.value, "number");
 
     assert_binary_expr(
-      &stmt.value,
+      &stmt.expression.value,
       &Expr::Number(10.0),
       &BinaryOp::Add,
       &Expr::Number(20.0),
@@ -100,11 +100,11 @@ mod tests {
     assert_eq!(program.statements.len(), 1);
     let stmt = &program.statements[0];
 
-    assert_eq!(stmt.name, "complex");
-    assert_eq!(stmt.type_name, "number");
+    assert_eq!(stmt.name.value, "complex");
+    assert_eq!(stmt.type_name.value, "number");
 
     // Should parse as 5 + (10 * 15) due to operator precedence
-    if let Expr::Binary { left, op, right } = &stmt.value {
+    if let Expr::Binary { left, op, right } = &stmt.expression.value {
       assert_eq!(**left, Expr::Number(5.0));
       assert_eq!(*op, BinaryOp::Add);
 
@@ -127,7 +127,7 @@ mod tests {
     let stmt = &program.statements[0];
 
     // Should parse as (10 + 20) * 30
-    if let Expr::Binary { left, op, right } = &stmt.value {
+    if let Expr::Binary { left, op, right } = &stmt.expression.value {
       assert_eq!(*op, BinaryOp::Mul);
       assert_eq!(**right, Expr::Number(30.0));
 
@@ -149,15 +149,15 @@ mod tests {
     assert_eq!(program.statements.len(), 1);
     let stmt = &program.statements[0];
 
-    assert_eq!(stmt.name, "result");
-    assert_eq!(stmt.type_name, "number");
+    assert_eq!(stmt.name.value, "result");
+    assert_eq!(stmt.type_name.value, "number");
 
     // This should parse as: ((5 * (10 + 2)) + ((8 - 3) * 6))
     if let Expr::Binary {
       left,
       op: op_outer,
       right,
-    } = &stmt.value
+    } = &stmt.expression.value
     {
       // Check top-level: ... + ...
       assert_eq!(*op_outer, BinaryOp::Add);
@@ -215,17 +215,17 @@ mod tests {
     assert_eq!(program.statements.len(), 2);
 
     let stmt1 = &program.statements[0];
-    assert_eq!(stmt1.name, "x");
-    assert_eq!(stmt1.type_name, "number");
-    match &stmt1.value {
+    assert_eq!(stmt1.name.value, "x");
+    assert_eq!(stmt1.type_name.value, "number");
+    match &stmt1.expression.value {
       Expr::Number(n) => assert_eq!(*n, 10.0),
       _ => panic!("Expected Number expression"),
     }
 
     let stmt2 = &program.statements[1];
-    assert_eq!(stmt2.name, "y");
-    assert_eq!(stmt2.type_name, "number");
-    match &stmt2.value {
+    assert_eq!(stmt2.name.value, "y");
+    assert_eq!(stmt2.type_name.value, "number");
+    match &stmt2.expression.value {
       Expr::Number(n) => assert_eq!(*n, 20.0),
       _ => panic!("Expected Number expression"),
     }
@@ -245,9 +245,9 @@ mod tests {
 
     // Check third statement with complex expression
     let stmt3 = &program.statements[2];
-    assert_eq!(stmt3.name, "result");
+    assert_eq!(stmt3.name.value, "result");
 
-    if let Expr::Binary { left, op, right } = &stmt3.value {
+    if let Expr::Binary { left, op, right } = &stmt3.expression.value {
       assert_eq!(*op, BinaryOp::Mul);
 
       // Check (x + y)

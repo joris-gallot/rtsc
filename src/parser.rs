@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, LetStatement, Program};
+use crate::ast::{BinaryOp, Expr, LetStatement, Positioned, Program};
 use crate::lexer::{SpannedToken, Token};
 
 pub struct Parser {
@@ -52,28 +52,37 @@ impl Parser {
   fn parse_let_statement(&mut self) -> LetStatement {
     self.expect(&Token::Let);
 
-    let name = match &self.next().token {
-      Token::Identifier(n) => n.clone(),
+    // Parse the identifier (name) with position
+    let name_token = self.next();
+    let name = match &name_token.token {
+      Token::Identifier(n) => Positioned::new(n.clone(), name_token.line, name_token.column),
       other => panic!("Expected identifier name, found {:?}", other),
     };
 
     self.expect(&Token::Colon);
 
-    let type_name = match &self.next().token {
-      Token::Type(t) => t.clone(),
+    // Parse the type with position
+    let type_token = self.next();
+    let type_name = match &type_token.token {
+      Token::Type(t) => Positioned::new(t.clone(), type_token.line, type_token.column),
       other => panic!("Expected type annotation, found {:?}", other),
     };
 
     self.expect(&Token::Equal);
 
-    let value = self.parse_expression();
+    let value_token = self.peek().clone();
+    let expr_position = Positioned::new(
+      self.parse_expression(),
+      value_token.line,
+      value_token.column,
+    );
 
     self.expect(&Token::Semicolon);
 
     LetStatement {
       name,
       type_name,
-      value,
+      expression: expr_position,
     }
   }
 
@@ -124,7 +133,8 @@ impl Parser {
   }
 
   fn parse_primary(&mut self) -> Expr {
-    match &self.next().token {
+    let token = self.next();
+    match &token.token {
       Token::LParen => {
         let expr = self.parse_expression();
         self.expect(&Token::RParen);

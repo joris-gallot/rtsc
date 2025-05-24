@@ -19,22 +19,22 @@ impl TypeChecker {
   }
 
   fn check_let(&mut self, stmt: &LetStatement) {
-    let expected_type = match stmt.type_name.as_str() {
+    let expected_type = match stmt.type_name.value.as_str() {
       "number" => Type::Number,
       "string" => Type::String,
       _ => Type::Unknown,
     };
 
-    let actual_type = self.check_expr(&stmt.value);
+    let actual_type = self.check_expr(&stmt.expression.value);
 
     if expected_type != actual_type {
       panic!(
-        "Type mismatch for '{}': expected {:?}",
-        stmt.name, expected_type
+        "{}:{} - Type mismatch for '{}': expected {:?}",
+        stmt.name.line, stmt.name.column, stmt.name.value, expected_type
       );
     }
 
-    self.env.insert(stmt.name.clone(), expected_type);
+    self.env.insert(stmt.name.value.clone(), expected_type);
   }
 
   fn binary_operator_to_text(&self, op: &BinaryOp) -> &'static str {
@@ -62,10 +62,17 @@ impl TypeChecker {
             Type::String
           } else {
             panic!(
-              "Type error: '{}' can only be used for number operations",
+              "Type error: '{}' can only be used for number operations, not with strings",
               self.binary_operator_to_text(op)
             );
           }
+        } else if left_type != right_type {
+          panic!(
+            "Type error: Cannot apply '{}' operation between different types ({:?} and {:?})",
+            self.binary_operator_to_text(op),
+            left_type,
+            right_type
+          );
         } else {
           Type::Unknown
         }
