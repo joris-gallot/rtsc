@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, LetStatement, Program, Type};
+use crate::ast::*;
 use std::collections::HashMap;
 
 pub struct TypeChecker {
@@ -37,15 +37,6 @@ impl TypeChecker {
     self.env.insert(stmt.name.value.clone(), expected_type);
   }
 
-  fn binary_operator_to_text(&self, op: &BinaryOp) -> &'static str {
-    match op {
-      BinaryOp::Add => "+",
-      BinaryOp::Sub => "-",
-      BinaryOp::Mul => "*",
-      BinaryOp::Div => "/",
-    }
-  }
-
   fn check_expr(&self, expr: &Expr) -> Type {
     match expr {
       Expr::Number(_) => Type::Number,
@@ -63,13 +54,13 @@ impl TypeChecker {
           } else {
             panic!(
               "Type error: '{}' can only be used for number operations, not with strings",
-              self.binary_operator_to_text(op)
+              op.to_str()
             );
           }
         } else if left_type != right_type {
           panic!(
             "Type error: Cannot apply '{}' operation between different types ({:?} and {:?})",
-            self.binary_operator_to_text(op),
+            op.to_str(),
             left_type,
             right_type
           );

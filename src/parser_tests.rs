@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-  use crate::ast::{BinaryOp, Expr, Program};
+  use crate::ast::*;
   use crate::lexer::Lexer;
   use crate::parser::Parser;
 

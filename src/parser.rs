@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, LetStatement, Positioned, Program};
+use crate::ast::*;
 use crate::lexer::{SpannedToken, Token};
 
 pub struct Parser {

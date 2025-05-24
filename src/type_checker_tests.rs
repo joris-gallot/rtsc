@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-  use crate::ast::{Positioned, Program};
+  use crate::ast::*;
   use crate::lexer::Lexer;
   use crate::parser::Parser;
   use crate::type_checker::TypeChecker;

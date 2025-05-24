@@ -42,6 +42,17 @@ pub enum BinaryOp {
   Div,
 }
 
+impl BinaryOp {
+  pub fn to_str(&self) -> &'static str {
+    match self {
+      BinaryOp::Add => "+",
+      BinaryOp::Sub => "-",
+      BinaryOp::Mul => "*",
+      BinaryOp::Div => "/",
+    }
+  }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct LetStatement {
   pub name: Positioned<String>,
